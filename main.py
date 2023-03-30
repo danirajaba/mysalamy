@@ -1,25 +1,31 @@
-from itertools import product
 from string import ascii_lowercase, digits
-import timeit
 import requests
+import itertools
+import concurrent.futures
 import time
 
 
-start = timeit.default_timer()
+alphabet = ascii_lowercase + digits
+word_length = 9
+
 date_ = int(time.time())
 
+def generate_urls():
+    for combination in itertools.product(alphabet, repeat=word_length):
+        code = 'a' + ''.join(combination)
+        yield f""
 
-for item in product(ascii_lowercase + digits, repeat = 9):
-    code = 'a' + ''.join(item)
+def get_status_code(url):
+    print(url)
+    response = requests.get(url)
+    return (url, response.status_code)
 
-    url = f""
-    status = requests.get(url).status_code
+with concurrent.futures.ThreadPoolExecutor(max_workers=2000000) as executor:
+    results = list(executor.map(get_status_code, generate_urls()))
 
-    print(f"{code}: {status}")
-
-    if status == 200:                
+for url, status_code in results:
+    print(f'{url} returned a status code of {status_code}')
+    if status_code == 200:                
         with open(f'output_{date_}.txt', 'a') as file:
             file.write( url + '\n')
-
-stop = timeit.default_timer()
-print('Time: ', stop - start)  
+  
